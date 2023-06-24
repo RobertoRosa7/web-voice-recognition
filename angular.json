@@ -92,6 +92,12 @@
                   "maximumError": "7mb"
                 }
               ],
+              "fileReplacements": [
+                {
+                  "replace": "projects/voice-web/src/environments/environment.ts",
+                  "with": "projects/voice-web/src/environments/environment.prod.ts"
+                }
+              ],
               "outputHashing": "all"
             },
             "development": {

@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Product } from '../../interfaces/product.interface';
+import { environment } from '../../../../src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
-  private readonly api: string = 'http://localhost:8080';
+  private readonly api: string = environment.api;
   constructor(private readonly http: HttpClient) {}
 
   public all(): Observable<Product[]> {
@@ -19,7 +20,9 @@ export class ProductService {
   }
 
   public findByName(name: string): Observable<Product> {
-    return this.http.get<Product>(`${this.api}/product/find-by-name?name=${name}`);
+    return this.http.get<Product>(
+      `${this.api}/product/find-by-name?name=${name}`
+    );
   }
 
   public removeOne(prod: Product): Observable<any> {
