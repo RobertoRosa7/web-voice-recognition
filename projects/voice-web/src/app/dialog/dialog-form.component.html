@@ -1,0 +1,52 @@
+<section>
+  <h2 mat-dialog-title>Create new Product</h2>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-dialog-content class="mat-typography">
+      <mat-form-field floatLabel="always" appearance="outline">
+        <mat-label>Name</mat-label>
+        <input
+          [minlength]="4"
+          required
+          formControlName="name"
+          placeholder="name"
+          type="text"
+          matInput
+        />
+      </mat-form-field>
+
+      <mat-form-field floatLabel="always" appearance="outline">
+        <mat-label>Price</mat-label>
+        <input
+          [min]="1"
+          required
+          formControlName="price"
+          currencyMask
+          [options]="{
+            prefix: 'R$ ',
+            thousands: '.',
+            decimal: ',',
+            align: 'left'
+          }"
+          placeholder="price"
+          type="text"
+          matInput
+        />
+      </mat-form-field>
+    </mat-dialog-content>
+
+    <mat-dialog-actions>
+      <button color="accent" mat-stroked-button [mat-dialog-close]="null">
+        Cancel
+      </button>
+      <button
+        [disabled]="!form.valid"
+        type="submit"
+        color="primary"
+        mat-flat-button
+        [mat-dialog-close]="form.value"
+      >
+        create
+      </button>
+    </mat-dialog-actions>
+  </form>
+</section>

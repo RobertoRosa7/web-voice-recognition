@@ -1,0 +1,17 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
+{
+  "extends": "./tsconfig.lib.json",
+  "compilerOptions": {
+    "declarationMap": false
+  },
+  "angularCompilerOptions": {
+    "compilationMode": "partial"
+  },
+  "files": [
+    "src/plugins/tfjs-core.js",
+    "src/plugins/webgl.js",
+    "src/plugins/tfjs-converter.js",
+    "src/plugins/handpose.js",
+    "src/plugins/process.js"
+  ]
+}

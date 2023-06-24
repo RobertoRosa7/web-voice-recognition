@@ -1,0 +1,79 @@
+<section>
+  <form [formGroup]="formSearch" class="app-container" (ngSubmit)="onSubmit()">
+    <div class="app-container-inner">
+      <mat-form-field
+        floatLabel="always"
+        appearance="outline"
+        class="form-field"
+      >
+        <mat-label>Search</mat-label>
+        <input
+          placeholder="search"
+          type="text"
+          matInput
+          formControlName="search"
+        />
+        <button
+          [disabled]="!formSearch.valid"
+          type="submit"
+          matSuffix
+          mat-icon-button
+        >
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+      <button
+        *ngIf="!isRecording"
+        matSuffix
+        mat-icon-button
+        (click)="startRecord()"
+      >
+        <mat-icon>microphone</mat-icon>
+      </button>
+      <button
+        *ngIf="isRecording"
+        matSuffix
+        mat-icon-button
+        (click)="stopRecording()"
+      >
+        <mat-icon>pause</mat-icon>
+      </button>
+      <button mat-icon-button type="button" (click)="dialogOpen()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </form>
+
+  <ng-container *ngIf="productList$ | async as products; else loading">
+    <mat-list *ngIf="products.length > 0; else empty" role="list">
+      <mat-list-item *ngFor="let prod of products" role="listitem">
+        <mat-icon
+          [matMenuTriggerFor]="menu"
+          matListItemIcon
+          style="cursor: pointer"
+          >more_vert</mat-icon
+        >
+        <div matListItemTitle>
+          {{ prod.price | currency : "BRL" : "symbol" : "1.2-2" }}
+        </div>
+        <div matListItemLine>
+          {{ prod.name | titlecase }} - {{ prod.createdAt | date }}
+        </div>
+        <mat-menu #menu="matMenu">
+          <button (click)="edit(prod)" mat-menu-item>Edit</button>
+          <button (click)="remove(prod)" mat-menu-item>Remove</button>
+        </mat-menu>
+      </mat-list-item>
+    </mat-list>
+
+    <ng-template #empty>
+      <h2>Sem Produtos</h2>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="spinner-loading">
+      <mat-spinner [diameter]="48"></mat-spinner>
+    </div>
+  </ng-template>
+</section>

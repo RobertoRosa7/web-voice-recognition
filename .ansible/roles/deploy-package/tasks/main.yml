@@ -1,0 +1,42 @@
+---
+# - name: Initialize the deploy root and gather facts
+  # deploy_helper:
+  #   path: "{{deploy_path}}_deploy"
+
+- name: Check nginx service is running
+  become: true
+  service:
+    name: nginx
+    state: started
+
+# - name: Creates directory
+#   file:
+#     path: '{{ deploy_helper.new_release_path }}'
+#     state: directory
+#     owner: "{{user}}"
+#     group: "{{group}}"
+
+- name: Unpack deploy files
+  unarchive:
+    src: "{{deploy_file}}"
+    dest: "/var/www/html"
+    owner: "{{user}}"
+    group: "{{group}}"
+
+# - name: Add an unfinished file, to allow cleanup on successful finalize
+#   file:
+#     path: '{{ deploy_helper.new_release_path }}/{{ deploy_helper.unfinished_filename }}'
+#     state: touch
+
+# - name: Clean artifact path
+#   file:
+#     state: absent
+#     path: "{{deploy_path}}"
+
+# - name: Finalize the deploy, removing the unfinished file and switching the symlink
+#   deploy_helper:
+#     path: "{{deploy_path}}_deploy"
+#     release: '{{ deploy_helper.new_release }}'
+#     current_path: "{{deploy_path}}"
+#     state: finalize
+#     keep_releases: 3
