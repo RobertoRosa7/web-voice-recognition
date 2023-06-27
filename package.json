@@ -24,7 +24,6 @@
     "@angular/router": "^15.2.0",
     "@tensorflow-models/speech-commands": "^0.5.4",
     "@tensorflow/tfjs": "^4.6.0",
-    "@voice/voice-lib": "file:releases/voice-voice-lib-1.0.22.tgz",
     "ng2-currency-mask": "^13.0.3",
     "process": "^0.11.10",
     "recordrtc": "^5.6.2",
