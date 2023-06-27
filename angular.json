@@ -53,7 +53,8 @@
             "allowedCommonJsDependencies": [
               "@tensorflow-models/speech-commands",
               "long",
-              "seedrandom"
+              "seedrandom",
+              "recordrtc"
             ],
             "outputPath": "dist/voice-web",
             "index": "projects/voice-web/src/index.html",
@@ -70,13 +71,7 @@
             "styles": [
               "projects/voice-web/src/styles.scss"
             ],
-            "scripts": [
-              "node_modules/@voice/voice-lib/src/plugins/process.js",
-              "node_modules/@voice/voice-lib/src/plugins/tfjs-core.js",
-              "node_modules/@voice/voice-lib/src/plugins/tfjs-converter.js",
-              "node_modules/@voice/voice-lib/src/plugins/webgl.js",
-              "node_modules/@voice/voice-lib/src/plugins/handpose.js"
-            ]
+            "scripts": []
           },
           "configurations": {
             "production": {
