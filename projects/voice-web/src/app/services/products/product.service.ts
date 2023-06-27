@@ -11,16 +11,16 @@ export class ProductService {
   private readonly api: string = environment.api;
   constructor(private readonly http: HttpClient) {}
 
-  public all(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.api}/product/all`);
+  public all(): Observable<Array<Product>> {
+    return this.http.get<Array<Product>>(`${this.api}/product/all`);
   }
 
   public findById(id: number): Observable<Product> {
     return this.http.get<Product>(`${this.api}/product/find-by-id/${id}`);
   }
 
-  public findByName(name: string): Observable<Product> {
-    return this.http.get<Product>(
+  public findByName(name: string): Observable<Array<Product>> {
+    return this.http.get<Array<Product>>(
       `${this.api}/product/find-by-name?name=${name}`
     );
   }

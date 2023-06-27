@@ -1,11 +1,15 @@
 import { EventComponent, eventType } from './event.component';
+import RecordRTC from 'recordrtc';
 
 export class AudioComponent extends EventComponent {
   public available: boolean = false;
-  public mimeType: string = 'audio/webm';
+  // public mimeType: string = "audio/ogg;codecs=opus";
+  public mimeType: RecordRTC.Options['mimeType'] = 'audio/wav';
   public stream!: MediaStream;
   public mediaRecorder!: MediaRecorder;
   public recordMicrophoneInterval: any;
+  private recorder!: RecordRTC.StereoAudioRecorder;
+  private readonly filename = `mic${Date.now()}.wav`;
 
   constructor() {
     super();
@@ -23,12 +27,34 @@ export class AudioComponent extends EventComponent {
     return this.available;
   }
 
+  public startRecorderRTC(): void {
+    console.log('audio starting recording');
+    if (this.available) {
+      this.recorder = new RecordRTC.StereoAudioRecorder(this.stream, {
+        type: 'audio',
+        mimeType: this.mimeType,
+      });
+      this.recorder.record();
+    }
+  }
+
+  public stopAudioRecorderRTC(): void {
+    if (this.available) {
+      this.recorder.stop((blob: Blob) => {
+        const file: File = new File([blob], this.filename, {
+          type: this.mimeType,
+          lastModified: Date.now(),
+        });
+        this.trigger(eventType.AUDIO_RECORDED, file)
+        this.stop();
+      });
+    }
+  }
+
   public startRecorder(): void {
     console.log('audio starting recording');
     if (this.isAvailable) {
-      this.mediaRecorder = new MediaRecorder(this.stream, {
-        mimeType: this.mimeType,
-      });
+      this.mediaRecorder = new MediaRecorder(this.stream);
 
       const recorderChunks: BlobPart[] = [];
       this.mediaRecorder.addEventListener('dataavailable', ({ data }) => {
@@ -37,9 +63,8 @@ export class AudioComponent extends EventComponent {
         }
       });
 
-      this.mediaRecorder.addEventListener('stop', (e) => {
+      this.mediaRecorder.addEventListener('stop', () => {
         const blob: Blob = new Blob(recorderChunks, { type: this.mimeType });
-        const filename = `rec${Date.now()}.webm`;
         const audioContext = new AudioContext();
         const reader = new FileReader();
 
@@ -47,7 +72,7 @@ export class AudioComponent extends EventComponent {
           const data = reader.result as ArrayBuffer;
 
           audioContext.decodeAudioData(data).then((decode) => {
-            const file: File = new File([blob], filename, {
+            const file: File = new File([blob], this.filename, {
               type: this.mimeType,
               lastModified: Date.now(),
             });

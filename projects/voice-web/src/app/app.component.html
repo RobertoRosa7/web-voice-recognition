@@ -22,25 +22,22 @@
           <mat-icon>search</mat-icon>
         </button>
       </mat-form-field>
-      <button
-        *ngIf="!isRecording"
-        matSuffix
-        mat-icon-button
-        (click)="startRecord()"
-      >
-        <mat-icon>microphone</mat-icon>
-      </button>
-      <button
-        *ngIf="isRecording"
-        matSuffix
-        mat-icon-button
-        (click)="stopRecording()"
-      >
-        <mat-icon>pause</mat-icon>
-      </button>
-      <button mat-icon-button type="button" (click)="dialogOpen()">
-        <mat-icon>add</mat-icon>
-      </button>
+      <ng-container *ngIf="status$ | async as status">
+        <ng-container [ngSwitch]="status">
+          <button matSuffix mat-icon-button (click)="statusCallback[status]()">
+            <mat-icon *ngSwitchCase="StatusAudio.STOPPED">microphone</mat-icon>
+            <mat-icon *ngSwitchCase="StatusAudio.RECORDING">pause</mat-icon>
+            <mat-icon
+              [class.spinner]="StatusAudio.RECORDING"
+              *ngSwitchCase="StatusAudio.LOADING"
+            >
+            </mat-icon>
+          </button>
+        </ng-container>
+        <button mat-icon-button type="button" (click)="dialogOpen()">
+          <mat-icon>add</mat-icon>
+        </button>
+      </ng-container>
     </div>
   </form>
 

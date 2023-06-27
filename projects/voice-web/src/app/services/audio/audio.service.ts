@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../../src/environments/environment';
 
 @Injectable({
@@ -8,6 +8,7 @@ import { environment } from '../../../../src/environments/environment';
 })
 export class AudioService {
   private readonly api: string = environment.api;
+  private readonly mlApi: string = environment.mlApi;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -16,5 +17,15 @@ export class AudioService {
       this.api + '/audio/send-audio',
       audioBase64
     );
+  }
+
+  public postAudioBlob(file: File): Observable<HttpEvent<void>> {
+    const formData = new FormData();
+    formData.set('file', file);
+
+    return this.http.post<void>(`${this.mlApi}/audio-blob`, formData, {
+      reportProgress: true,
+      observe: 'events',
+    });
   }
 }

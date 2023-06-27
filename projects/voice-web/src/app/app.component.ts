@@ -10,13 +10,15 @@ import {
   startWith,
   filter,
 } from 'rxjs';
+import { HttpEvent, HttpEventType } from '@angular/common/http';
 import { AudioComponent } from './audio/audio.component';
 import { AudioService } from './services/audio/audio.service';
 import { eventType } from './audio/event.component';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogFormComponent } from './dialog/dialog-form.component';
-import { Product } from './interfaces/product.interface';
+import { Product, SearchResponse } from './interfaces/product.interface';
 import { ProductService } from './services/products/product.service';
+import { StatusAudio } from './interfaces/audio.interface';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +30,8 @@ export class AppComponent implements OnInit {
   public placeholder = '';
   public audioComponent!: AudioComponent;
   public isRecording: boolean = false;
+  public status$: BehaviorSubject<StatusAudio> =
+    new BehaviorSubject<StatusAudio>(StatusAudio.STOPPED);
   public productList$: BehaviorSubject<Array<Product>> = new BehaviorSubject<
     Array<Product>
   >([]);
@@ -35,6 +39,8 @@ export class AppComponent implements OnInit {
   public formSearch: FormGroup = this.formBuilder.group({
     search: ['', [Validators.required]],
   });
+
+  public StatusAudio = StatusAudio;
 
   constructor(
     private readonly formBuilder: FormBuilder,
@@ -52,13 +58,13 @@ export class AppComponent implements OnInit {
       .get('search')
       ?.valueChanges.pipe(
         startWith(' '),
+        debounceTime(1000),
         distinctUntilChanged(),
-        debounceTime(300),
         mergeMap((value) => {
           if (value) {
             return this.productService.findByName(value).pipe(
               filter((prod) => !!prod),
-              map((prod) => [prod])
+              map((prod) => prod)
             );
           }
           return this.productService.all();
@@ -71,30 +77,51 @@ export class AppComponent implements OnInit {
 
   public startRecord(): void {
     this.isRecording = true;
+    this.status$.next(StatusAudio.RECORDING);
     this.audioComponent = new AudioComponent();
 
     this.audioComponent.on(eventType.AUDIO_LISTENING, () => {
-      this.audioComponent.startRecorder();
+      // this.audioComponent.startRecorder();
+      this.audioComponent.startRecorderRTC();
     });
   }
 
-  public stopRecording(): void {
-    this.audioComponent.on(
-      eventType.AUDIO_RECORDED,
-      (file: File, metadata: AudioBuffer) => {
-        const reader = new FileReader();
+  public get statusCallback() {
+    return {
+      [StatusAudio.STOPPED]: () => this.startRecord(),
+      [StatusAudio.RECORDING]: () => this.stopRecording(),
+      [StatusAudio.LOADING]: () => {},
+    };
+  }
 
-        reader.onloadend = () => {
-          this.audioService
-            .postAudio(reader.result as string)
-            .subscribe(({ keyword }) =>
-              this.formSearch.get('search')?.setValue(keyword)
-            );
-        };
-        reader.readAsDataURL(file);
-      }
-    );
-    this.audioComponent.stopRecorder();
+  public uploadBase64(file: File): void {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      this.audioService
+        .postAudio(reader.result as string)
+        .subscribe(({ keyword }) =>
+          this.formSearch.get('search')?.setValue(keyword)
+        );
+    };
+    reader.readAsDataURL(file);
+  }
+
+  public stopRecording(): void {
+    this.audioComponent.on(eventType.AUDIO_RECORDED, (file: File) => {
+      this.audioService.postAudioBlob(file).subscribe((ev: HttpEvent<any>) => {
+        this.status$.next(StatusAudio.LOADING);
+        switch (ev.type) {
+          case HttpEventType.Response:
+            if (ev.status === 200) {
+              const response: SearchResponse = ev.body as SearchResponse;
+              this.status$.next(StatusAudio.STOPPED);
+              this.formSearch.get('search')?.setValue(response.keyword);
+            }
+        }
+      });
+    });
+    // this.audioComponent.stopRecorder();
+    this.audioComponent.stopAudioRecorderRTC();
     this.isRecording = false;
   }
 

@@ -4,3 +4,7 @@ export interface Product {
   price: number;
   createdAt?: string;
 }
+
+export interface SearchResponse {
+  keyword: string;
+}
