@@ -3,10 +3,10 @@ version: "3.7"
 services:
   nginx:
     build: .
-    container_name: web-voice
+    container_name: web
     restart: always
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ~/certificates/:/etc/nginx/certs/
+      - ~/certificates/:/etc/ssl/certs/
