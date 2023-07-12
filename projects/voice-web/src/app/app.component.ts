@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   map,
@@ -19,6 +19,7 @@ import { DialogFormComponent } from './dialog/dialog-form.component';
 import { Product, SearchResponse } from './interfaces/product.interface';
 import { ProductService } from './services/products/product.service';
 import { StatusAudio } from './interfaces/audio.interface';
+import * as pdfjs from 'pdfjs-dist';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +27,7 @@ import { StatusAudio } from './interfaces/audio.interface';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
+  @ViewChild('canvas', { static: false }) canvas!: ElementRef;
   public names = ['carro', 'bike'];
   public placeholder = '';
   public audioComponent!: AudioComponent;
@@ -47,7 +49,10 @@ export class AppComponent implements OnInit {
     private readonly audioService: AudioService,
     private readonly productService: ProductService,
     private readonly dialog: MatDialog
-  ) {}
+  ) {
+    pdfjs.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.worker.min.js';
+  }
 
   public ngOnInit(): void {
     this.productService
@@ -74,6 +79,33 @@ export class AppComponent implements OnInit {
   }
 
   public onSubmit(): void {}
+
+  public onChange({ target }: Event): void {
+    const element: HTMLInputElement = target as HTMLInputElement;
+    const file: File = element.files?.item(0) as File;
+    const reader: FileReader = new FileReader();
+
+    reader.onload = () => {
+      pdfjs
+        .getDocument(new Uint8Array(reader.result as ArrayBuffer))
+        .promise.then((pdf) => {
+          pdf.getPage(1).then((page) => {
+            const scale = 1.5;
+            const viewport = page.getViewport({ scale });
+
+            var context = this.canvas.nativeElement.getContext('2d');
+            this.canvas.nativeElement.height = viewport.height;
+            this.canvas.nativeElement.width = viewport.width;
+            var renderContext = {
+              canvasContext: context,
+              viewport: viewport,
+            };
+            page.render(renderContext);
+          });
+        });
+    };
+    reader.readAsArrayBuffer(file);
+  }
 
   public startRecord(): void {
     this.isRecording = true;
